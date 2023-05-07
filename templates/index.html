@@ -10,85 +10,184 @@
             display: inline-block;
             cursor: pointer;
         }
+        .container {
+            display: flex;
+        }
+        .panel {
+            flex: 1;
+            margin: 0 10px;
+        }
     </style>
 </head>
 <body>
     <h1>Hex to Binary Converter with Toggle and Bit Range Decoder</h1>
-    <form>
-        <label for="hex_value">Hex Value:</label>
-        <input type="text" id="hex_value" name="hex_value" required>
-        <button type="button" onclick="convertHexToBinary()">Convert</button>
-    </form>
-    <div id="binary_container"></div>
-    <h2>Hex Result: <span id="hex_result"></span></h2>
-    <form>
-        <label for="bit_range">Bit Range (e.g., 7:4):</label>
-        <input type="text" id="bit_range" name="bit_range" required>
-        <button type="button" onclick="decodeBitRange()">Decode</button>
-    </form>
-    <h2>Decoded Result: <span id="decoded_result"></span></h2>
+    <div class="container">
+        <div class="panel">
+            <form>
+                <label for="hex_value1">Hex Value:</label>
+                <input type="text" id="hex_value1" placeholder="Hex Value" oninput="updateHexResult(1)">
+                <button type="button" onclick="convertHexToBinary(1)">Convert</button>
+            </form>
+            <div id="binary_container1"></div>
+            <h2>Hex Result: <span id="hex_result1"></span></h2>
+            <form>
+                <label for="bit_range1">Bit Range (e.g., 7:4):</label>
+                <input type="text" id="bit_range1" name="bit_range1" required>
+                <button type="button" onclick="decodeBitRange(1)">Decode</button>
+            </form>
+            <h2>Decoded Result: <span id="decoded_result1"></span></h2>
+        </div>
+        <div class="panel">
+            <form>
+                <label for="hex_value2">Hex Value:</label>
+                <input type="text" id="hex_value2" placeholder="Hex Value" oninput="updateHexResult(2)">
+                <button type="button" onclick="convertHexToBinary(2)">Convert</button>
+            </form>
+            <div id="binary_container2"></div>
+            <h2>Hex Result: <span id="hex_result2"></span></h2>
+            <form>
+                <label for="bit_range2">Bit Range (e.g., 7:4):</label>
+                <input type="text" id="bit_range2" name="bit_range2" required>
+                <button type="button" onclick="decodeBitRange(2)">Decode</button>
+            </form>
+            <h2>Decoded Result: <span id="decoded_result2"></span></h2>
+        </div>
+    </div>
+    <button type="button" onclick="compareHexResults()">Compare Results</button>
+<div id="comparison_container"></div>
 
     <script>
-    function toggleBit(element) {
-        element.textContent = element.textContent === '1' ? '0' : '1';
-    }
+        function toggleBit(element, panelIndex) {
+            element.textContent = element.textContent === '1' ? '0' : '1';
+            convertBinaryToHex(panelIndex);
 
-    function convertBinaryToHex() {
-        const binaryString = Array.from(document.querySelectorAll('.bit')).reduce((acc, bit) => acc + bit.textContent, '');
-        const hexValue = parseInt(binaryString, 2).toString(16).toUpperCase();
-        document.getElementById('hex_result').textContent = hexValue;
-    }
-
-    function convertHexToBinary() {
-        const hexValue = document.getElementById('hex_value').value;
-        const binaryValue = hexToBinary(hexValue);
-        displayBinaryBits(binaryValue);
-    }
-
-    function hexToBinary(hexValue) {
-        try {
-            return parseInt(hexValue, 16).toString(2).padStart(hexValue.length * 4, '0');
-        } catch (error) {
-            return "Invalid Hex Value";
+            const bitRange = document.getElementById(`bit_range${panelIndex}`).value;
+            if (bitRange) {
+                decodeBitRange(panelIndex);
+            }
         }
-    }
 
-    function displayBinaryBits(binaryValue) {
-    const binaryContainer = document.getElementById('binary_container');
-    binaryContainer.innerHTML = '';
+    
+        function convertBinaryToHex(panelIndex) {
+            const binaryString = Array.from(document.querySelectorAll(`.bit${panelIndex}`)).reduce((acc, bit) => acc + bit.textContent, '');
+            const hexValue = parseInt(binaryString, 2).toString(16).toUpperCase();
+            document.getElementById(`hex_result${panelIndex}`).textContent = hexValue;
+        }
+    
+        function convertHexToBinary(panelIndex = 1) {
+            const hexValue = document.getElementById(`hex_value${panelIndex}`).value;
+            const binaryValue = hexToBinary(hexValue);
+            displayBinaryBits(binaryValue, panelIndex);
+        }
+    
+        function hexToBinary(hexValue) {
+            try {
+                return parseInt(hexValue, 16).toString(2).padStart(hexValue.length * 4, '0');
+            } catch (error) {
+                return "Invalid Hex Value";
+            }
+        }
+    
+        function displayBinaryBits(binaryValue, panelIndex) {
+            const binaryContainer = document.getElementById(`binary_container${panelIndex === 2 ? 2 : 1}`);
+            binaryContainer.innerHTML = '';
 
-    binaryValue.split('').forEach((bit, index) => {
-        const bitWrapper = document.createElement('div');
-        bitWrapper.style.display = 'inline-block';
-        bitWrapper.style.marginRight = '10px';
+            for (let i = 0; i < binaryValue.length; i++) {
+                const bit = binaryValue[i];
 
-        const bitElement = document.createElement('span');
-        bitElement.classList.add('bit');
-        bitElement.textContent = bit;
-        bitElement.addEventListener('click', () => toggleBit(bitElement));
-        bitWrapper.appendChild(bitElement);
+                // Create a group wrapper for every 4 bits
+                if (i % 4 === 0) {
+                    const groupWrapper = document.createElement('div');
+                    groupWrapper.style.display = 'inline-block';
+                    groupWrapper.style.marginRight = '20px';
+                    groupWrapper.style.border = '1px solid black';
+                    groupWrapper.style.padding = '5px';
+                    groupWrapper.id = `group${panelIndex}_${Math.floor(i / 4)}`;
+                    binaryContainer.appendChild(groupWrapper);
+                }
 
-        const bitLabel = document.createElement('div');
-        bitLabel.textContent = `Bit ${binaryValue.length - index - 1}`;
-        bitWrapper.appendChild(bitLabel);
+                const groupWrapper = document.getElementById(`group${panelIndex}_${Math.floor(i / 4)}`);
 
-        binaryContainer.appendChild(bitWrapper);
-    });
+                const bitWrapper = document.createElement('div');
+                bitWrapper.style.display = 'inline-block';
+                bitWrapper.style.marginRight = '10px';
 
-    // Add event listener for converting binary to hex
-    binaryContainer.addEventListener('click', convertBinaryToHex);
-}
+                const bitElement = document.createElement('span');
+                bitElement.classList.add(`bit${panelIndex}`);
+                bitElement.textContent = bit;
+                bitElement.addEventListener('click', () => toggleBit(bitElement, panelIndex));
+                bitWrapper.appendChild(bitElement);
 
+                const bitLabel = document.createElement('div');
+                bitLabel.textContent = `Bit ${binaryValue.length - i - 1}`;
+                bitWrapper.appendChild(bitLabel);
 
+                groupWrapper.appendChild(bitWrapper);
+            }
 
-    function decodeBitRange() {
-        const bitRange = document.getElementById('bit_range').value;
-        const range = bitRange.split(':').map(Number).reverse();
-        const binaryString = Array.from(document.querySelectorAll('.bit')).slice(range[0], range[1] + 1).reduce((acc, bit) => acc + bit.textContent, '');
-        const hexValue = parseInt(binaryString, 2).toString(16).toUpperCase();
-        document.getElementById('decoded_result').textContent = `0x${hexValue}`;
-    }
-</script>
+            binaryContainer.addEventListener('click', () => convertBinaryToHex(panelIndex));
+        }
 
-<body>
-	</html>
+    
+        function decodeBitRange(panelIndex) {
+            const bitRange = document.getElementById(`bit_range${panelIndex}`).value;
+            const range = bitRange.split(':').map(Number);
+            const binaryString = Array.from(document.querySelectorAll(`.bit${panelIndex}`)).reverse().slice(range[1], range[0] + 1).reverse().reduce((acc, bit) => acc + bit.textContent, '');
+            const hexValue = parseInt(binaryString, 2).toString(16).toUpperCase();
+            document.getElementById(`decoded_result${panelIndex}`).textContent = `0x${hexValue}`;
+        }
+        function compareHexResults() {
+            const hexResult1 = document.getElementById("hex_result1").textContent;
+            const hexResult2 = document.getElementById("hex_result2").textContent;
+
+            if (hexResult1 && hexResult2) {
+                const binary1 = hexToBinary(hexResult1);
+                const binary2 = hexToBinary(hexResult2);
+                const maxLength = Math.max(binary1.length, binary2.length);
+
+                const paddedBinary1 = binary1.padStart(maxLength, '0');
+                const paddedBinary2 = binary2.padStart(maxLength, '0');
+
+                displayComparisonResults(paddedBinary1, paddedBinary2);
+            } else {
+                alert("Please provide valid hex values in both panels.");
+            }
+        }
+
+        function displayComparisonResults(binary1, binary2) {
+            const comparisonContainer = document.getElementById("comparison_container");
+            comparisonContainer.innerHTML = "";
+
+            for (let i = 0; i < binary1.length; i++) {
+                const bitWrapper = document.createElement("div");
+                bitWrapper.style.display = "inline-block";
+                bitWrapper.style.marginRight = "10px";
+
+                const bitLabel = document.createElement("div");
+                bitLabel.textContent = `Bit ${binary1.length - i - 1}`;
+                bitWrapper.appendChild(bitLabel);
+
+                const bitElement1 = document.createElement("span");
+                bitElement1.textContent = binary1[i];
+                bitElement1.style.fontWeight = binary1[i] !== binary2[i] ? "bold" : "normal";
+                bitWrapper.appendChild(bitElement1);
+
+                const bitElement2 = document.createElement("span");
+                bitElement2.textContent = binary2[i];
+                bitElement2.style.fontWeight = binary1[i] !== binary2[i] ? "bold" : "normal";
+                bitWrapper.appendChild(bitElement2);
+
+                comparisonContainer.appendChild(bitWrapper);
+            }
+        }
+        function updateHexResult(panelIndex) {
+            const hexValue = document.getElementById(`hex_value${panelIndex}`).value;
+            const hexResult = document.getElementById(`hex_result${panelIndex}`);
+            hexResult.textContent = hexValue.toUpperCase();
+        }
+
+    </script>
+    
+  </body>
+</html>
+
