@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hex to Binary Converter with Toggle and Bit Range Decoder</title>
+    <style>
+        .bit {
+            display: inline-block;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hex to Binary Converter with Toggle and Bit Range Decoder</h1>
+    <form>
+        <label for="hex_value">Hex Value:</label>
+        <input type="text" id="hex_value" name="hex_value" required>
+        <button type="button" onclick="convertHexToBinary()">Convert</button>
+    </form>
+    <div id="binary_container"></div>
+    <h2>Hex Result: <span id="hex_result"></span></h2>
+    <form>
+        <label for="bit_range">Bit Range (e.g., 7:4):</label>
+        <input type="text" id="bit_range" name="bit_range" required>
+        <button type="button" onclick="decodeBitRange()">Decode</button>
+    </form>
+    <h2>Decoded Result: <span id="decoded_result"></span></h2>
+
+    <script>
+    function toggleBit(element) {
+        element.textContent = element.textContent === '1' ? '0' : '1';
+    }
+
+    function convertBinaryToHex() {
+        const binaryString = Array.from(document.querySelectorAll('.bit')).reduce((acc, bit) => acc + bit.textContent, '');
+        const hexValue = parseInt(binaryString, 2).toString(16).toUpperCase();
+        document.getElementById('hex_result').textContent = hexValue;
+    }
+
+    function convertHexToBinary() {
+        const hexValue = document.getElementById('hex_value').value;
+        const binaryValue = hexToBinary(hexValue);
+        displayBinaryBits(binaryValue);
+    }
+
+    function hexToBinary(hexValue) {
+        try {
+            return parseInt(hexValue, 16).toString(2).padStart(hexValue.length * 4, '0');
+        } catch (error) {
+            return "Invalid Hex Value";
+        }
+    }
+
+    function displayBinaryBits(binaryValue) {
+    const binaryContainer = document.getElementById('binary_container');
+    binaryContainer.innerHTML = '';
+
+    binaryValue.split('').forEach((bit, index) => {
+        const bitWrapper = document.createElement('div');
+        bitWrapper.style.display = 'inline-block';
+        bitWrapper.style.marginRight = '10px';
+
+        const bitElement = document.createElement('span');
+        bitElement.classList.add('bit');
+        bitElement.textContent = bit;
+        bitElement.addEventListener('click', () => toggleBit(bitElement));
+        bitWrapper.appendChild(bitElement);
+
+        const bitLabel = document.createElement('div');
+        bitLabel.textContent = `Bit ${binaryValue.length - index - 1}`;
+        bitWrapper.appendChild(bitLabel);
+
+        binaryContainer.appendChild(bitWrapper);
+    });
+
+    // Add event listener for converting binary to hex
+    binaryContainer.addEventListener('click', convertBinaryToHex);
+}
+
+
+
+    function decodeBitRange() {
+        const bitRange = document.getElementById('bit_range').value;
+        const range = bitRange.split(':').map(Number).reverse();
+        const binaryString = Array.from(document.querySelectorAll('.bit')).slice(range[0], range[1] + 1).reduce((acc, bit) => acc + bit.textContent, '');
+        const hexValue = parseInt(binaryString, 2).toString(16).toUpperCase();
+        document.getElementById('decoded_result').textContent = `0x${hexValue}`;
+    }
+</script>
+
+<body>
+	</html>
